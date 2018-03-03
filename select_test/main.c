@@ -7,12 +7,12 @@
 
 #include <linux/input.h>
 
-#define DEV_NUM     4
+#define DEV_NUM     2
 
 #define DEV_1       "/dev/input/event1"
 #define DEV_2       "/dev/input/event2"
-#define DEV_3       "/dev/input/event3"
-#define DEV_4       "/dev/input/event4"
+//#define DEV_3       "/dev/input/event3"
+//#define DEV_4       "/dev/input/event4"
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     int i;
     int fd_group[DEV_NUM];
     struct input_event input_t;
-    fd_set rfds;
+    fd_set rfds,temps;
     struct timeval tv;
     int retval;
     system("cat /proc/bus/input/devices > devices.info");
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         printf("fd_dev2 opened failed");
         return;
     }
-
+/*
     fd_dev3 = open(DEV_3, O_RDWR);
     if(fd_dev3 < 0)
     {
@@ -53,34 +53,78 @@ int main(int argc, char *argv[])
         printf("fd_dev4 opened failed");
         return;
     }
-
+*/
     FD_ZERO(&rfds);
     FD_SET(fd_dev1, &rfds);
     FD_SET(fd_dev2, &rfds);
-    FD_SET(fd_dev3, &rfds);
-    FD_SET(fd_dev4, &rfds);
+  //  FD_SET(fd_dev3, &rfds);
+  //  FD_SET(fd_dev4, &rfds);
 
     if(fd_max<fd_dev1)fd_max = fd_dev1;
     if(fd_max<fd_dev2)fd_max = fd_dev2;
-    if(fd_max<fd_dev3)fd_max = fd_dev3;
-    if(fd_max<fd_dev4)fd_max = fd_dev4;
+  //  if(fd_max<fd_dev3)fd_max = fd_dev3;
+  //  if(fd_max<fd_dev4)fd_max = fd_dev4;
 
     /* Wait up to five seconds. */
     tv.tv_sec = 5;
     tv.tv_usec = 0;
+
     fd_group[0] = fd_dev1;
     fd_group[1] = fd_dev2;
-    fd_group[2] = fd_dev3;
-    fd_group[3] = fd_dev4;
+  //  fd_group[2] = fd_dev3;
+  //  fd_group[3] = fd_dev4;
 
     while(1)
     {
+#if 0
+        if(read(fd_dev1, &input_t, sizeof(input_t))){
+            //if( input_t.type == EV_KEY){
+                if(input_t.value == 0 || input_t.value == 1){
+                    printf("\n detect key %d %s",input_t.code,input_t.value ? "released":"pressed");
+                }
+            //}
+        }
+        if(read(fd_dev2, &input_t, sizeof(input_t))){
+            //if( input_t.type == EV_KEY){
+                if(input_t.value == 0 || input_t.value == 1){
+                    printf("\n detect key %d %s",input_t.code,input_t.value ? "released":"pressed");
+                }
+            //}
+        }
+#endif
+#if 0
+        if(read(fd_dev2, &input_t, sizeof(input_t))){
+            if( input_t.type == EV_KEY){
+                if(input_t.value == 0 || input_t.value == 1){
+                    printf("\n detect key %d %s",input_t.code,input_t.value ? "released":"pressed");
+                }
+            }
+        }
+#endif
 
-        retval = select(fd_max + 1, &rfds, NULL, NULL, &tv);
+#if 1
+//        FD_ZERO(&rfds);
+//        FD_SET(fd_dev1, &rfds);
+//        FD_SET(fd_dev2, &rfds);
+
+//        if(fd_max<fd_dev1)fd_max = fd_dev1;
+//        if(fd_max<fd_dev2)fd_max = fd_dev2;
+
+        /* Wait up to five seconds. */
+//        tv.tv_sec = 5;
+//        tv.tv_usec = 0;
+//        fd_group[0] = fd_dev1;
+//        fd_group[1] = fd_dev2;
+        temps = rfds;
+        retval = select(fd_max + 1, &temps, NULL, NULL, &tv);
         /* Don't rely on the value of tv now! */
         if (retval == -1)
         {
             perror("select()");
+        }
+        else if (retval == 0)
+        {
+            printf("timeout");
         }
         else if (retval)
         {
@@ -103,7 +147,8 @@ int main(int argc, char *argv[])
         {
             printf("No data within five seconds.\n");
         }
-        usleep(1000);
+        usleep(100000);
+#endif
     }
     exit(EXIT_SUCCESS);
 
