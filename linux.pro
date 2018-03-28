@@ -9,6 +9,7 @@ SUBDIRS += \
     select_test \
     timer_test \
     signal_test \
-    sigaction_test
+    sigaction_test \
+    poll_test
 
 DESTDIR = $$PWD/output
